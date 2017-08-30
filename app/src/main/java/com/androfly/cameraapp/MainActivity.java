@@ -2,7 +2,9 @@ package com.androfly.cameraapp;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraCaptureSession;
@@ -15,6 +17,7 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -33,8 +36,11 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
@@ -44,6 +50,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.logging.LogRecord;
 
 public class MainActivity extends AppCompatActivity {
@@ -55,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
     private CameraCaptureSession previewSession;
     Button getpicture;
     ImageButton ibFlash , ibFrontBack , ibModes ;
+    private ImageReader imageReader;
+    public static final String CAMERA_FRONT = "1";
+    public static final String CAMERA_BACK = "0";
+
+    private String cameraId = CAMERA_BACK;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
 
@@ -94,7 +106,19 @@ public class MainActivity extends AppCompatActivity {
         ibFrontBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                 
+                if (cameraId.equals(CAMERA_FRONT)) {
+                    Toast.makeText(MainActivity.this, "Rear Camera", Toast.LENGTH_SHORT).show();
+                    cameraId = CAMERA_BACK;
+                    closeCamera();
+                    openCamera(0);
+
+                } else if (cameraId.equals(CAMERA_BACK)) {
+                    Toast.makeText(MainActivity.this, "Front Camera", Toast.LENGTH_SHORT).show();
+                    cameraId = CAMERA_FRONT;
+                    closeCamera();
+                    openCamera(1);
+                }
+
             }
         });
 
@@ -150,19 +174,33 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 void save(byte[] bytes) {
-                    File file12 = getOutputMediaFile();
-                    OutputStream outputStream = null;
+                    FileOutputStream fOut;
+                    long date = System.currentTimeMillis();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyddMM ");
+                    String dateString = sdf.format(date);
+                    Random generator = new Random();
+                    int n = 10000;
+                    n = generator.nextInt(n);
+                    String fname = "photo-"+dateString+"-"+n+".png";
                     try {
-                        outputStream = new FileOutputStream(file12);
-                        outputStream.write(bytes);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    } finally {
-                        try {
-                            if (outputStream != null)
-                                outputStream.close();
-                        } catch (Exception e) {
+                        File path = new File(Environment.getExternalStoragePublicDirectory(
+                                Environment.DIRECTORY_PICTURES), "Custom Camera" );
+                        if (!path.exists()){
+                            path.mkdir();
                         }
+                        File fileName = new File(path , fname);
+                        fOut = new FileOutputStream(fileName);
+                        fOut.write(bytes);
+                        fOut.flush();
+                        fOut.close();
+                        Toast.makeText(MainActivity.this, "Image Saved To Gallery", Toast.LENGTH_SHORT).show();
+
+                    } catch (FileNotFoundException e1) {
+                        // TODO Auto-generated catch block
+                        Toast.makeText(MainActivity.this, ""+e1.getMessage(), Toast.LENGTH_SHORT).show();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        Toast.makeText(MainActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
             };
@@ -292,6 +330,16 @@ public class MainActivity extends AppCompatActivity {
             },null);
         }catch (Exception e)
         {
+        }
+    }
+    private void closeCamera() {
+        if (null != cameraDevice) {
+            cameraDevice.close();
+            cameraDevice = null;
+        }
+        if (null != imageReader) {
+            imageReader.close();
+            imageReader = null;
         }
     }
     void getChangedPreview()
