@@ -94,7 +94,14 @@ public class MainActivity extends AppCompatActivity {
         ibFrontBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                
+                 
+            }
+        });
+
+        ibModes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
             }
         });
 
