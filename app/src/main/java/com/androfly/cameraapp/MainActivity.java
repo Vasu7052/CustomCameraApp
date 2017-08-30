@@ -32,6 +32,8 @@ import android.view.MenuItem;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -80,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_main);
         textureView = (TextureView) findViewById(R.id.textureview);
         textureView.setSurfaceTextureListener(surfaceTextureListener);
@@ -186,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
                         File path = new File(Environment.getExternalStoragePublicDirectory(
                                 Environment.DIRECTORY_PICTURES), "Custom Camera" );
                         if (!path.exists()){
-                            path.mkdir(); 
+                            path.mkdir();
                         }
                         File fileName = new File(path , fname);
                         fOut = new FileOutputStream(fileName);
