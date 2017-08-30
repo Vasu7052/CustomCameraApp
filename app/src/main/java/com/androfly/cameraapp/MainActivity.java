@@ -186,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
                         File path = new File(Environment.getExternalStoragePublicDirectory(
                                 Environment.DIRECTORY_PICTURES), "Custom Camera" );
                         if (!path.exists()){
-                            path.mkdir();
+                            path.mkdir(); 
                         }
                         File fileName = new File(path , fname);
                         fOut = new FileOutputStream(fileName);
